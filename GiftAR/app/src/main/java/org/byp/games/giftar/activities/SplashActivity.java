@@ -1,13 +1,10 @@
 package org.byp.games.giftar.activities;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.google.inject.Inject;
 
-import org.byp.games.giftar.GiftARApplication;
 import org.byp.games.giftar.R;
 import org.byp.games.giftar.services.PreferencesService;
 
