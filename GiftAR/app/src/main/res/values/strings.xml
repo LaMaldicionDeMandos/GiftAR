@@ -1,6 +1,3 @@
 <resources>
     <string name="app_name">GiftAR</string>
-    <string name="account_settings">Account Settings</string>
-    <string name="google_account">Google</string>
-    <string name="google_account_summary">Google Account</string>
 </resources>
