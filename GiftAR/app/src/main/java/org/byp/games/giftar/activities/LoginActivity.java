@@ -64,11 +64,6 @@ GoogleApiClient.OnConnectionFailedListener {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
     protected void onStop() {
         super.onStop();
         googleClient.disconnect();
@@ -77,6 +72,8 @@ GoogleApiClient.OnConnectionFailedListener {
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "Google account connected");
+        setResult(RESULT_OK);
+        finish();
     }
 
     @Override
