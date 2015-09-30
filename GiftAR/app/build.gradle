@@ -9,13 +9,13 @@ android {
     }
     signingConfigs {
         debug {
-            storeFile file("/Users/boot/.android/debug.keystore")
+            storeFile file("debug.keystore")
         }
         release {
-            storeFile file('/Users/boot/.android/giftar_key.jks')
-            storePassword "spuenci"
-            keyAlias 'GiftAR'
-            keyPassword "spuenci"
+            storeFile file('giftar_key.jks')
+            keyAlias 'giftAR'
+            keyPassword 'spuenci'
+            storePassword 'spuenci'
         }
     }
     defaultConfig {
