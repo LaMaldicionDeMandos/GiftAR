@@ -19,6 +19,8 @@ import roboguice.activity.RoboActivity;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 
+import static org.byp.games.giftar.activities.ActivityUtils.getGoogleClient;
+
 @ContentView(R.layout.activity_login)
 public class LoginActivity extends RoboActivity implements GoogleApiClient.ConnectionCallbacks,
 GoogleApiClient.OnConnectionFailedListener {
@@ -41,11 +43,7 @@ GoogleApiClient.OnConnectionFailedListener {
                 googleClient.connect();
             }
         });
-        googleClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(Plus.API)
-                .addScope(new Scope(Scopes.PROFILE)).build();
+        googleClient = getGoogleClient(this, this, this);
     }
 
     @Override
