@@ -43,5 +43,4 @@ dependencies {
     compile 'com.google.code.gson:gson:2.2.+'
     compile 'org.roboguice:roboguice:3.+'
     compile 'com.google.guava:guava:18.+'
-    compile 'com.google.android.gms:play-services:8.1.0'
 }

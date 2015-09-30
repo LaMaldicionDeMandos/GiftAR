@@ -30,7 +30,7 @@ public class SplashActivity extends RoboActivity {
         super.onCreate(savedInterfaceState);
         if(!preferences.contain(MASTER_USER_KEY)) {
             Log.d(TAG, "Todavia no se registro ningun usuario");
-            startActivityForResult(new Intent(this, AccountSettingsActovity.class), RESPONSE);
+            startActivityForResult(new Intent(this, LoginActivity.class), RESPONSE);
         } else {
             Log.d(TAG, "Ya existe un usuario registrado");
         }

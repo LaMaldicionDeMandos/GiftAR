@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">GiftAR</string>
+    <string name="title_activity_login">Sign In</string>
 </resources>
