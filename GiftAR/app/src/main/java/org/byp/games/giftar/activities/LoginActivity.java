@@ -10,8 +10,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.Scope;
-import com.google.android.gms.plus.Plus;
+import com.google.common.collect.Lists;
 
 import org.byp.games.giftar.R;
 
@@ -19,6 +18,7 @@ import roboguice.activity.RoboActivity;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.byp.games.giftar.activities.ActivityUtils.getGoogleClient;
 
 @ContentView(R.layout.activity_login)

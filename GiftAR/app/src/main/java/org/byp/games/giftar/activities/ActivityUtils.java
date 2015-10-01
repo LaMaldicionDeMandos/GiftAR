@@ -7,6 +7,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.plus.Plus;
 
+import java.util.List;
+
 /**
  * Created by boot on 9/30/15.
  */
@@ -16,7 +18,9 @@ public class ActivityUtils {
                                                   final GoogleApiClient.OnConnectionFailedListener failedCallback) {
 
         GoogleApiClient.Builder builder = new GoogleApiClient.Builder(context)
-                .addApi(Plus.API).addScope(new Scope(Scopes.PROFILE));
+                .addApi(Plus.API)
+                .addScope(new Scope(Scopes.PROFILE))
+                .addScope(new Scope(Scopes.EMAIL));
         if (connectionCallback != null) {
             builder.addConnectionCallbacks(connectionCallback);
         }

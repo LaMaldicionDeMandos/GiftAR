@@ -7,9 +7,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.plus.Plus;
-import com.google.android.gms.plus.model.people.Person;
 import com.google.inject.Inject;
 
 import org.byp.games.giftar.R;
@@ -44,6 +42,8 @@ GoogleApiClient.OnConnectionFailedListener {
             startActivityForResult(new Intent(this, LoginActivity.class), RESPONSE);
         } else {
             Log.d(TAG, "Ya existe un usuario registrado");
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
         }
     }
 
@@ -73,7 +73,7 @@ GoogleApiClient.OnConnectionFailedListener {
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.d(TAG, "Connection Failed");
+        Log.d(TAG, "Connection Failed: " + connectionResult);
         startActivityForResult(new Intent(this, LoginActivity.class), RESPONSE);
     }
 
@@ -89,19 +89,15 @@ GoogleApiClient.OnConnectionFailedListener {
     }
 
     private void saveUserAccount() {
-        Person currentPerson = Plus.PeopleApi.getCurrentPerson(googleClient);
-        if (currentPerson != null) {
-            String personName = currentPerson.getDisplayName();
-            String personPhoto = currentPerson.getImage().getUrl();
-            String personGooglePlusProfile = currentPerson.getUrl();
-            Toast.makeText(this, personName, Toast.LENGTH_LONG).show();
-            Toast.makeText(this, personPhoto, Toast.LENGTH_LONG).show();
-            Toast.makeText(this, personGooglePlusProfile, Toast.LENGTH_LONG).show();
-            Log.d(TAG, "User name: " + personName);
-            Log.d(TAG, "User photo: " + personPhoto);
-            Log.d(TAG, "User url: " + personGooglePlusProfile);
+        String account = Plus.AccountApi.getAccountName(googleClient);
+        if (account != null) {
+            Log.d(TAG, "Save google account: " + account);
+            preferences.put(MASTER_USER_KEY, account);
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
         } else {
             Toast.makeText(this, "Nope", Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 }
