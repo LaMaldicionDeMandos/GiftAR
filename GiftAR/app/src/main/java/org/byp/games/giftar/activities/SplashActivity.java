@@ -5,17 +5,21 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
 import com.google.inject.Inject;
 
+import org.byp.games.giftar.GiftARApplication;
 import org.byp.games.giftar.R;
 import org.byp.games.giftar.services.PreferencesService;
 
 import roboguice.activity.RoboActivity;
 import roboguice.inject.ContentView;
 
+import static org.byp.games.giftar.GiftARApplication.AnalitycsCategory.UX;
 import static org.byp.games.giftar.GiftARApplication.MASTER_USER_KEY;
 import static org.byp.games.giftar.activities.ActivityUtils.getGoogleClient;
 
@@ -27,8 +31,13 @@ public class SplashActivity extends RoboActivity implements GoogleApiClient.Conn
 GoogleApiClient.OnConnectionFailedListener {
     private final static String TAG = SplashActivity.class.getSimpleName();
     public final static int RESPONSE = 1;
+    public static final String LOGIN = "login";
+    public static final String SIGN_UP = "sign up";
 
     private GoogleApiClient googleClient;
+
+    @Inject
+    private Tracker tracker;
 
     @Inject
     private PreferencesService preferences;
@@ -90,9 +99,14 @@ GoogleApiClient.OnConnectionFailedListener {
 
     private void saveUserAccount() {
         String account = Plus.AccountApi.getAccountName(googleClient);
-        if (account != null) {
+        if (account != null && !preferences.contain(MASTER_USER_KEY)) {
             Log.d(TAG, "Save google account: " + account);
             preferences.put(MASTER_USER_KEY, account);
+            tracker.send(new HitBuilders.EventBuilder()
+                    .setCategory(UX.toString())
+                    .setAction(LOGIN)
+                    .setLabel(SIGN_UP)
+                    .build());
             startActivity(new Intent(this, MainActivity.class));
             finish();
         } else {

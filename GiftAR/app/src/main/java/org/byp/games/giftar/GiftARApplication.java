@@ -28,4 +28,8 @@ public class GiftARApplication extends Application {
         RoboGuice.getOrCreateBaseApplicationInjector(this, RoboGuice.DEFAULT_STAGE,
                 RoboGuice.newDefaultRoboModule(this), new GiftArModule());
     }
+
+    public static enum AnalitycsCategory {
+        UX
+    }
 }
