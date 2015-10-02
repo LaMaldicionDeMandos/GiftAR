@@ -2,6 +2,7 @@ package org.byp.games.giftar;
 
 import android.app.Application;
 
+import com.firebase.client.Firebase;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
 
@@ -27,6 +28,7 @@ public class GiftARApplication extends Application {
         RoboGuice.setUseAnnotationDatabases(false);
         RoboGuice.getOrCreateBaseApplicationInjector(this, RoboGuice.DEFAULT_STAGE,
                 RoboGuice.newDefaultRoboModule(this), new GiftArModule());
+        Firebase.setAndroidContext(this);
     }
 
     public static enum AnalitycsCategory {

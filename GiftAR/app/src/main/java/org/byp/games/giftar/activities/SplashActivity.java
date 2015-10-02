@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.firebase.client.Firebase;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.common.ConnectionResult;
@@ -12,7 +13,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
 import com.google.inject.Inject;
 
-import org.byp.games.giftar.GiftARApplication;
 import org.byp.games.giftar.R;
 import org.byp.games.giftar.services.PreferencesService;
 
@@ -40,12 +40,16 @@ GoogleApiClient.OnConnectionFailedListener {
     private Tracker tracker;
 
     @Inject
+    private Firebase firebase;
+
+    @Inject
     private PreferencesService preferences;
 
     @Override
     protected void onCreate(Bundle savedInterfaceState) {
         super.onCreate(savedInterfaceState);
         googleClient = getGoogleClient(this, this, this);
+        firebase.child("user").setValue("Conectado!!");
         if(!preferences.contain(MASTER_USER_KEY)) {
             Log.d(TAG, "Todavia no se registro ningun usuario");
             startActivityForResult(new Intent(this, LoginActivity.class), RESPONSE);
@@ -101,7 +105,7 @@ GoogleApiClient.OnConnectionFailedListener {
         String account = Plus.AccountApi.getAccountName(googleClient);
         if (account != null && !preferences.contain(MASTER_USER_KEY)) {
             Log.d(TAG, "Save google account: " + account);
-            preferences.put(MASTER_USER_KEY, account);
+            persisteUserOnPreferences(account);
             tracker.send(new HitBuilders.EventBuilder()
                     .setCategory(UX.toString())
                     .setAction(LOGIN)
@@ -113,5 +117,9 @@ GoogleApiClient.OnConnectionFailedListener {
             Toast.makeText(this, "Nope", Toast.LENGTH_LONG).show();
             finish();
         }
+    }
+
+    private void persisteUserOnPreferences(final String user) {
+        preferences.put(MASTER_USER_KEY, user);
     }
 }

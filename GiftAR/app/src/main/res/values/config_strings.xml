@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="analytics_id">UA-68068233-1</string>
+    <string name="firebase_url">https://giftar.firebaseio.com/</string>
+
 </resources>
