@@ -7,6 +7,7 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 
 import org.byp.games.giftar.providers.FirebaseProvider;
+import org.byp.games.giftar.services.AnalitycsService;
 import org.byp.games.giftar.services.DefaultPreferencesService;
 import org.byp.games.giftar.services.PreferencesService;
 
@@ -22,6 +23,7 @@ public class GiftArModule implements Module {
         binder.bind(PreferencesService.class).to(DefaultPreferencesService.class);
         binder.bind(GoogleAnalytics.class).toInstance(analytics);
         binder.bind(Tracker.class).toInstance(tracker);
+        binder.bind(AnalitycsService.class);
         binder.bind(Firebase.class).toProvider(FirebaseProvider.class);
     }
 }

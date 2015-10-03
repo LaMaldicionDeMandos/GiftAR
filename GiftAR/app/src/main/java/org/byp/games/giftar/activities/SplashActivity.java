@@ -14,14 +14,15 @@ import com.google.android.gms.plus.Plus;
 import com.google.inject.Inject;
 
 import org.byp.games.giftar.R;
+import org.byp.games.giftar.services.AnalitycsService;
 import org.byp.games.giftar.services.PreferencesService;
 
 import roboguice.activity.RoboActivity;
 import roboguice.inject.ContentView;
 
-import static org.byp.games.giftar.GiftARApplication.AnalitycsCategory.UX;
 import static org.byp.games.giftar.GiftARApplication.MASTER_USER_KEY;
 import static org.byp.games.giftar.activities.ActivityUtils.getGoogleClient;
+import static org.byp.games.giftar.services.AnalitycsService.AnalitycsCategory.UX;
 
 /**
  * Created by boot on 9/24/15.
@@ -37,7 +38,7 @@ GoogleApiClient.OnConnectionFailedListener {
     private GoogleApiClient googleClient;
 
     @Inject
-    private Tracker tracker;
+    private AnalitycsService analitycs;
 
     @Inject
     private Firebase firebase;
@@ -105,12 +106,9 @@ GoogleApiClient.OnConnectionFailedListener {
         String account = Plus.AccountApi.getAccountName(googleClient);
         if (account != null && !preferences.contain(MASTER_USER_KEY)) {
             Log.d(TAG, "Save google account: " + account);
-            persisteUserOnPreferences(account);
-            tracker.send(new HitBuilders.EventBuilder()
-                    .setCategory(UX.toString())
-                    .setAction(LOGIN)
-                    .setLabel(SIGN_UP)
-                    .build());
+            persistUserOnPreferences(account);
+            analitycs.track(UX, LOGIN, SIGN_UP);
+
             startActivity(new Intent(this, MainActivity.class));
             finish();
         } else {
@@ -119,7 +117,7 @@ GoogleApiClient.OnConnectionFailedListener {
         }
     }
 
-    private void persisteUserOnPreferences(final String user) {
+    private void persistUserOnPreferences(final String user) {
         preferences.put(MASTER_USER_KEY, user);
     }
 }

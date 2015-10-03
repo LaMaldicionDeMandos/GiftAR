@@ -30,8 +30,4 @@ public class GiftARApplication extends Application {
                 RoboGuice.newDefaultRoboModule(this), new GiftArModule());
         Firebase.setAndroidContext(this);
     }
-
-    public static enum AnalitycsCategory {
-        UX
-    }
 }
