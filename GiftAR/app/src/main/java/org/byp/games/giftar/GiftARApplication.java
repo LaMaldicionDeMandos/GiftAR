@@ -25,9 +25,9 @@ public class GiftARApplication extends Application {
         tracker.enableExceptionReporting(true);
         tracker.enableAdvertisingIdCollection(true);
         tracker.enableAutoActivityTracking(true);
+        Firebase.setAndroidContext(this);
         RoboGuice.setUseAnnotationDatabases(false);
         RoboGuice.getOrCreateBaseApplicationInjector(this, RoboGuice.DEFAULT_STAGE,
                 RoboGuice.newDefaultRoboModule(this), new GiftArModule());
-        Firebase.setAndroidContext(this);
     }
 }

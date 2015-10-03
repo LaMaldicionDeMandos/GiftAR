@@ -2,6 +2,7 @@ package org.byp.games.giftar.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.telephony.ServiceState;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -16,6 +17,7 @@ import com.google.inject.Inject;
 import org.byp.games.giftar.R;
 import org.byp.games.giftar.services.AnalitycsService;
 import org.byp.games.giftar.services.PreferencesService;
+import org.byp.games.giftar.services.Services;
 
 import roboguice.activity.RoboActivity;
 import roboguice.inject.ContentView;
@@ -41,7 +43,7 @@ GoogleApiClient.OnConnectionFailedListener {
     private AnalitycsService analitycs;
 
     @Inject
-    private Firebase firebase;
+    private Services services;
 
     @Inject
     private PreferencesService preferences;
@@ -50,7 +52,6 @@ GoogleApiClient.OnConnectionFailedListener {
     protected void onCreate(Bundle savedInterfaceState) {
         super.onCreate(savedInterfaceState);
         googleClient = getGoogleClient(this, this, this);
-        firebase.child("user").setValue("Conectado!!");
         if(!preferences.contain(MASTER_USER_KEY)) {
             Log.d(TAG, "Todavia no se registro ningun usuario");
             startActivityForResult(new Intent(this, LoginActivity.class), RESPONSE);
@@ -108,7 +109,7 @@ GoogleApiClient.OnConnectionFailedListener {
             Log.d(TAG, "Save google account: " + account);
             persistUserOnPreferences(account);
             analitycs.track(UX, LOGIN, SIGN_UP);
-
+            services.signUp(account);
             startActivity(new Intent(this, MainActivity.class));
             finish();
         } else {

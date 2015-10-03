@@ -10,6 +10,7 @@ import org.byp.games.giftar.providers.FirebaseProvider;
 import org.byp.games.giftar.services.AnalitycsService;
 import org.byp.games.giftar.services.DefaultPreferencesService;
 import org.byp.games.giftar.services.PreferencesService;
+import org.byp.games.giftar.services.Services;
 
 import static org.byp.games.giftar.GiftARApplication.analytics;
 import static org.byp.games.giftar.GiftARApplication.tracker;
@@ -25,5 +26,6 @@ public class GiftArModule implements Module {
         binder.bind(Tracker.class).toInstance(tracker);
         binder.bind(AnalitycsService.class);
         binder.bind(Firebase.class).toProvider(FirebaseProvider.class);
+        binder.bind(Services.class);
     }
 }
