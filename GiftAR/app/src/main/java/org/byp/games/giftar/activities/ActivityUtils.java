@@ -19,8 +19,8 @@ public class ActivityUtils {
 
         GoogleApiClient.Builder builder = new GoogleApiClient.Builder(context)
                 .addApi(Plus.API)
-                .addScope(new Scope(Scopes.PROFILE))
-                .addScope(new Scope(Scopes.EMAIL));
+                .addScope(Plus.SCOPE_PLUS_PROFILE)
+                .addScope(Plus.SCOPE_PLUS_LOGIN);
         if (connectionCallback != null) {
             builder.addConnectionCallbacks(connectionCallback);
         }

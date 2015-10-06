@@ -2,16 +2,15 @@ package org.byp.games.giftar.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.telephony.ServiceState;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.firebase.client.Firebase;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Result;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.plus.Plus;
+import com.google.android.gms.plus.model.people.Person;
 import com.google.inject.Inject;
 
 import org.byp.games.giftar.R;
@@ -31,7 +30,7 @@ import static org.byp.games.giftar.services.AnalitycsService.AnalitycsCategory.U
  */
 @ContentView(R.layout.activity_splash)
 public class SplashActivity extends RoboActivity implements GoogleApiClient.ConnectionCallbacks,
-GoogleApiClient.OnConnectionFailedListener {
+GoogleApiClient.OnConnectionFailedListener, ResultCallback {
     private final static String TAG = SplashActivity.class.getSimpleName();
     public final static int RESPONSE = 1;
     public static final String LOGIN = "login";
@@ -104,12 +103,14 @@ GoogleApiClient.OnConnectionFailedListener {
     }
 
     private void saveUserAccount() {
-        String account = Plus.AccountApi.getAccountName(googleClient);
-        if (account != null && !preferences.contain(MASTER_USER_KEY)) {
+        Plus.PeopleApi.loadVisible(googleClient, null).setResultCallback(this);
+        Person person = Plus.PeopleApi.getCurrentPerson(googleClient);
+        if (person != null && !preferences.contain(MASTER_USER_KEY)) {
+            String account = Plus.AccountApi.getAccountName(googleClient);
             Log.d(TAG, "Save google account: " + account);
             persistUserOnPreferences(account);
             analitycs.track(UX, LOGIN, SIGN_UP);
-            services.signUp(account);
+            services.signUp(account, person);
             startActivity(new Intent(this, MainActivity.class));
             finish();
         } else {
@@ -120,5 +121,10 @@ GoogleApiClient.OnConnectionFailedListener {
 
     private void persistUserOnPreferences(final String user) {
         preferences.put(MASTER_USER_KEY, user);
+    }
+
+    @Override
+    public void onResult(Result result) {
+        Log.d(TAG, result.toString());
     }
 }
