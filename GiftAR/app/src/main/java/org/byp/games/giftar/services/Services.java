@@ -14,6 +14,8 @@ import org.byp.games.giftar.model.User;
 import org.byp.games.giftar.model.UserProfile;
 import org.byp.games.giftar.model.UserState;
 
+import java.util.HashMap;
+
 /**
  * Created by boot on 10/2/15.
  */
@@ -27,16 +29,19 @@ public class Services {
         this.firebase = firebase;
     }
 
-    public void signUp(final String accountId, final Person profile) {
+    public void signUp(final String accountId) {
         final String userId = accountId.replaceAll("\\.","");
         firebase.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG, "Data changed " + dataSnapshot);
                 if (!dataSnapshot.exists()) {
-                    User user = new User(userId, profile.getDisplayName(), profile.getImage(),
-                            new UserProfile(UserState.ACTIVE));
-                    firebase.child(userId).setValue(user.getProfile());
+                    UserProfile userProfile = new UserProfile(UserState.ACTIVE);
+                    firebase.child(userId).setValue(userProfile);
+                } else {
+                    UserProfile userProfile = dataSnapshot.getValue(UserProfile.class);
+                    userProfile.activate();
+                    firebase.child(userId).setValue(userProfile);
                 }
             }
 

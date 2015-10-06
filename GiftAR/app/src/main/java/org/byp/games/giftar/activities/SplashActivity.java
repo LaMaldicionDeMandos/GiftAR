@@ -103,14 +103,12 @@ GoogleApiClient.OnConnectionFailedListener, ResultCallback {
     }
 
     private void saveUserAccount() {
-        Plus.PeopleApi.loadVisible(googleClient, null).setResultCallback(this);
-        Person person = Plus.PeopleApi.getCurrentPerson(googleClient);
-        if (person != null && !preferences.contain(MASTER_USER_KEY)) {
+        if (!preferences.contain(MASTER_USER_KEY)) {
             String account = Plus.AccountApi.getAccountName(googleClient);
             Log.d(TAG, "Save google account: " + account);
             persistUserOnPreferences(account);
             analitycs.track(UX, LOGIN, SIGN_UP);
-            services.signUp(account, person);
+            services.signUp(account);
             startActivity(new Intent(this, MainActivity.class));
             finish();
         } else {
