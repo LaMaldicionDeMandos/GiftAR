@@ -13,6 +13,7 @@ import roboguice.inject.InjectResource;
  */
 @Singleton
 public class FirebaseProvider implements Provider<Firebase> {
+    private final static String TAG = FirebaseProvider.class.getSimpleName();
     @InjectResource(R.string.firebase_url)
     private String url;
 
