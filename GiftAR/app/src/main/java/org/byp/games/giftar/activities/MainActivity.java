@@ -1,6 +1,8 @@
 package org.byp.games.giftar.activities;
 
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import org.byp.games.giftar.R;
 
@@ -14,4 +16,5 @@ public class MainActivity extends RoboActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
+
 }
