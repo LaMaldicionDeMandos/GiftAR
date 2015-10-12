@@ -2,5 +2,9 @@
 <resources>
     <style name="AppTheme" parent="android:Theme.Material">
         <!-- Customize your theme here. -->
+        <item name="android:colorPrimary">@color/primary</item>
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:textColor">@color/text</item>
+
     </style>
 </resources>
