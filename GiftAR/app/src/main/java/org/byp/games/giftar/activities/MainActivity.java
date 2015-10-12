@@ -1,6 +1,7 @@
 package org.byp.games.giftar.activities;
 
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -17,40 +18,19 @@ import roboguice.activity.RoboActivity;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 
-;import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newArrayList;
 
-@ContentView(R.layout.activity_main)
-public class MainActivity extends RoboActivity {
+public class MainActivity extends AppCompatActivity {
     private final static String TAG = MainActivity.class.getSimpleName();
-    @InjectView(R.id.contacts)
     private RecyclerView listView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "Agregando contactos: Aida y marcelo");
-        List<String> contacts = newArrayList(
-                "Aída0",
-                "Aída1",
-                "Aída2",
-                "Aída3",
-                "Aída4",
-                "Aída5",
-                "Aída6",
-                "Aída7",
-                "Aída8",
-                "Aída9",
-                "Aída10",
-                "Aída11",
-                "Aída12",
-                "Aída13",
-                "Aída14",
-                "Aída15",
-                "Aída16",
-                "Aída17",
-                "Aída18",
-                "Aída19",
-                "Marcelo"
-                );
+        setContentView(R.layout.activity_main);
+        listView = (RecyclerView)findViewById(R.id.contacts);
+        Log.d(TAG, "Agregando contactos");
+        List<String> contacts = newArrayList("Aída", "Marcelo");
         RecyclerView.Adapter<ContactsAdapter.ViewHolder> adapter = new ContactsAdapter(contacts);
         listView.setLayoutManager(new LinearLayoutManager(this));
         listView.setAdapter(adapter);
