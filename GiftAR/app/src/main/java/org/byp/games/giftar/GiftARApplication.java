@@ -15,6 +15,7 @@ import static org.byp.games.giftar.R.string.analytics_id;
  */
 public class GiftARApplication extends Application {
     public final static String MASTER_USER_KEY = "master_user";
+    public final static String USER_CONTACTS_KEY = "user_contacts";
     protected static GoogleAnalytics analytics;
     protected static Tracker tracker;
     @Override

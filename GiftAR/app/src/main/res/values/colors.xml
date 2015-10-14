@@ -6,4 +6,5 @@
     <color name="accent">#FF5722</color>
     <color name="text">#212121</color>
     <color name="background">#FFFFFF</color>
+    <color name="primary_text">#FFFFFF</color>
 </resources>
