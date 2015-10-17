@@ -1,15 +1,13 @@
 package org.byp.games.giftar.activities;
 
-import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
-import android.content.ContentResolver;
 import android.content.DialogInterface;
-import android.content.Entity;
-import android.content.OperationApplicationException;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -20,6 +18,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -30,10 +29,7 @@ import com.google.android.gms.plus.People;
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.model.people.Person;
 import com.google.android.gms.plus.model.people.PersonBuffer;
-import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
+import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 
 import org.byp.games.giftar.R;
@@ -42,6 +38,14 @@ import org.byp.games.giftar.model.UserProfile;
 import org.byp.games.giftar.model.UserState;
 import org.byp.games.giftar.services.PreferencesService;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -123,11 +127,22 @@ public class MainActivity extends RoboActionBarActivity implements GoogleApiClie
                         for (int i = 0; i < count; i++) {
                             Person person = personBuffer.get(i);
                             Log.d(TAG, "Display name: " + person.getDisplayName());
-                            User user = new User(person.getDisplayName(), person.getDisplayName(),
+                            final User user = new User(person.getDisplayName(), person.getDisplayName(),
                                     person.getImage(), new UserProfile(UserState.UNKNOW));
                             contacts.add(user);
-                            if(i == 0)
-                            addContact(user);
+                            if(i == 0) {
+                                AsyncTask<User, Void, Void> task = new AsyncTask<User, Void, Void>() {
+                                    @Override
+                                    protected Void doInBackground(User[] users) {
+                                        for (User user : users) {
+                                            addContact(user);
+                                        }
+                                        return null;
+                                    }
+                                };
+                                task.execute(user);
+                            }
+
                             listView.getAdapter().notifyItemInserted(contacts.size() - 1);
                         }
                     } finally {
@@ -142,6 +157,14 @@ public class MainActivity extends RoboActionBarActivity implements GoogleApiClie
     }
 
     private void addContact(User user) {
+        byte[] photo = null;
+        try {
+            URL url = new URL(user.getAvatar().getUrl());
+            InputStream io = url.openStream();
+            photo = ByteStreams.toByteArray(io);
+        } catch (IOException e) {
+            Log.e(TAG, "Error on load image from google");
+        }
         ArrayList<ContentProviderOperation> ops = new ArrayList<>();
         ContentProviderOperation op = ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
                 .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, GIFTAR_COM)
@@ -156,11 +179,11 @@ public class MainActivity extends RoboActionBarActivity implements GoogleApiClie
         op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                 .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                 .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
-                .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO_URI, user.getAvatar().getUrl())
-                .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO_THUMBNAIL_URI, user.getAvatar().getUrl())
+                .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, photo)
                 .build();
-        //ops.add(op);
+        ops.add(op);
         try {
+            Log.d(TAG, "Inserting user " + user.getName());
             getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
         } catch (Exception e) {
             e.printStackTrace();
@@ -207,13 +230,14 @@ public class MainActivity extends RoboActionBarActivity implements GoogleApiClie
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
             View v = LayoutInflater.from(MainActivity.this)
-                    .inflate(android.R.layout.simple_list_item_1, viewGroup, false);
+                    .inflate(R.layout.view_contact, viewGroup, false);
             return new ViewHolder(v);
         }
 
         @Override
         public void onBindViewHolder(ViewHolder contactViewHolder, int i) {
             contactViewHolder.name.setText(contacts.get(i).getName());
+            contactViewHolder.photo.setImageURI(contacts.get(i).getUri());
         }
 
         @Override
@@ -223,10 +247,12 @@ public class MainActivity extends RoboActionBarActivity implements GoogleApiClie
 
         class ViewHolder extends RecyclerView.ViewHolder {
             private final TextView name;
+            private final ImageView photo;
 
             public ViewHolder(View itemView) {
                 super(itemView);
-                name = (TextView)itemView.findViewById(android.R.id.text1);
+                name = (TextView)itemView.findViewById(R.id.text);
+                photo = (ImageView)itemView.findViewById(R.id.photo);
             }
         }
     }
