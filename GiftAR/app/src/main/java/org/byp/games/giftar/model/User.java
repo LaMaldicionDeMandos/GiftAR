@@ -11,22 +11,12 @@ import com.google.api.client.repackaged.com.google.common.base.Objects;
 public class User {
     private final String id;
     private final String name;
-    private final Person.Image avatar;
     private final UserProfile profile;
     private final Uri uri;
-
-    public User(final String id, final String name, final Person.Image avatar, final UserProfile profile) {
-        this.id = id;
-        this.name = name;
-        this.avatar = avatar;
-        this.profile = profile;
-        this.uri = null;
-    }
 
     public User(final String id, final String name, final Uri uri, final UserProfile profile) {
         this.id = id;
         this.name = name;
-        this.avatar = null;
         this.profile = profile;
         this.uri = uri;
     }
@@ -37,10 +27,6 @@ public class User {
 
     public String getName() {
         return name;
-    }
-
-    public Person.Image getAvatar() {
-        return avatar;
     }
 
     public Uri getUri() {
@@ -69,7 +55,7 @@ public class User {
         return Objects.toStringHelper(User.class)
                 .add("id", id)
                 .add("name", name)
-                .add("avatar", avatar)
+                .add("avatar", uri)
                 .add("profile", profile)
                 .toString();
     }

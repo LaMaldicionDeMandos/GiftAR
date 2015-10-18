@@ -3,8 +3,6 @@ package org.byp.games.giftar.activities;
 import android.content.ContentProviderOperation;
 import android.content.DialogInterface;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -22,14 +20,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.plus.People;
-import com.google.android.gms.plus.Plus;
-import com.google.android.gms.plus.model.people.Person;
-import com.google.android.gms.plus.model.people.PersonBuffer;
-import com.google.common.io.ByteStreams;
+import com.google.api.client.util.Sets;
 import com.google.inject.Inject;
 
 import org.byp.games.giftar.R;
@@ -38,16 +30,9 @@ import org.byp.games.giftar.model.UserProfile;
 import org.byp.games.giftar.model.UserState;
 import org.byp.games.giftar.services.PreferencesService;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import roboguice.activity.RoboActionBarActivity;
 import roboguice.inject.ContentView;
@@ -67,9 +52,6 @@ public class MainActivity extends RoboActionBarActivity implements GoogleApiClie
 
     private GoogleApiClient googleClient;
 
-    @Inject
-    private PreferencesService preferences;
-
     private final List<User> contacts = newArrayList();
 
     @Override
@@ -77,9 +59,21 @@ public class MainActivity extends RoboActionBarActivity implements GoogleApiClie
         super.onCreate(savedInstanceState);
         googleClient = getGoogleClient(this, this, this);
         setupToolbar();
-        if (!preferences.contain(USER_CONTACTS_KEY)) {
-            showImportContactsDialog();
-        }
+        new AsyncTask() {
+            @Override
+            protected Object doInBackground(Object[] params) {
+                findContacts();
+                if (contacts.isEmpty()) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            showImportContactsDialog();
+                        }
+                    });
+                }
+                return null;
+            }
+        }.execute();
         Log.d(TAG, contacts.toString());
         RecyclerView.Adapter<ContactsAdapter.ViewHolder> adapter = new ContactsAdapter(contacts);
         listView.setLayoutManager(new LinearLayoutManager(this));
@@ -117,69 +111,73 @@ public class MainActivity extends RoboActionBarActivity implements GoogleApiClie
     }
 
     private void importContacts() {
-        Plus.PeopleApi.loadVisible(googleClient, null).setResultCallback(new ResultCallback<People.LoadPeopleResult>() {
-            @Override
-            public void onResult(People.LoadPeopleResult result) {
-                if (result.getStatus().getStatusCode() == CommonStatusCodes.SUCCESS) {
-                    PersonBuffer personBuffer = result.getPersonBuffer();
-                    try {
-                        int count = personBuffer.getCount();
-                        for (int i = 0; i < count; i++) {
-                            Person person = personBuffer.get(i);
-                            Log.d(TAG, "Display name: " + person.getDisplayName());
-                            final User user = new User(person.getDisplayName(), person.getDisplayName(),
-                                    person.getImage(), new UserProfile(UserState.UNKNOW));
-                            contacts.add(user);
-                            if(i == 0) {
-                                AsyncTask<User, Void, Void> task = new AsyncTask<User, Void, Void>() {
-                                    @Override
-                                    protected Void doInBackground(User[] users) {
-                                        for (User user : users) {
-                                            addContact(user);
-                                        }
-                                        return null;
-                                    }
-                                };
-                                task.execute(user);
-                            }
-
-                            listView.getAdapter().notifyItemInserted(contacts.size() - 1);
-                        }
-                    } finally {
-                        personBuffer.release();
-                        listView.getAdapter().notifyDataSetChanged();
-                    }
-                } else {
-                    Log.e(TAG, "Error requesting visible circles: " + result.getStatus());
-                }
+        Set<User> users = Sets.newHashSet();
+        Uri uri = ContactsContract.Contacts.CONTENT_URI;
+        uri = Uri.withAppendedPath(uri, ContactsContract.Contacts.Entity.CONTENT_DIRECTORY);
+        Cursor cursor = getContentResolver().query(uri,
+                new String[]{ContactsContract.RawContacts.CONTACT_ID, ContactsContract.CommonDataKinds.Email.ADDRESS, ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts.Photo.PHOTO_URI},
+                ContactsContract.Contacts.IN_VISIBLE_GROUP + " = 1 and " +
+                        ContactsContract.CommonDataKinds.Email.ADDRESS + " is not null and " +
+                        ContactsContract.CommonDataKinds.Email.ADDRESS + " not like '%@s.whatsapp.net' and " +
+                        ContactsContract.CommonDataKinds.Email.ADDRESS + " like '%@%'"
+                ,
+                null, null);
+        for (int i = 0; i < cursor.getCount(); i++) {
+            cursor.moveToNext();
+            String id = cursor.getString(0);
+            String email = cursor.getString(1);
+            String name = cursor.getString(2);
+            String photo = cursor.getString(3);
+            Log.d(TAG, id + " display name: " + name + " Email: " + email + " Photo: " + photo);
+            uri = photo == null ? null : Uri.parse(photo);
+            User user = new User(email, name, uri, new UserProfile(UserState.UNKNOW));
+            if (!users.contains(user)) {
+                addContact(id, user);
             }
-        });
+            users.add(user);
+        }
+        contacts.addAll(users);
+        listView.getAdapter().notifyDataSetChanged();
+        cursor.close();
     }
 
-    private void addContact(User user) {
-        byte[] photo = null;
-        try {
-            URL url = new URL(user.getAvatar().getUrl());
-            InputStream io = url.openStream();
-            photo = ByteStreams.toByteArray(io);
-        } catch (IOException e) {
-            Log.e(TAG, "Error on load image from google");
+    private void findContacts() {
+        Uri uri = ContactsContract.Contacts.CONTENT_URI;
+        uri = Uri.withAppendedPath(uri, ContactsContract.Contacts.Entity.CONTENT_DIRECTORY);
+        Cursor cursor = getContentResolver().query(uri,
+                new String[]{ContactsContract.RawContacts.ACCOUNT_NAME, ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, ContactsContract.Contacts.Photo.PHOTO_URI},
+                ContactsContract.RawContacts.ACCOUNT_TYPE + " like '" + GIFTAR_COM + "'",
+                null, null);
+        for (int i = 0; i < cursor.getCount(); i++) {
+            cursor.moveToNext();
+            String email = cursor.getString(0);
+            String name = cursor.getString(1);
+            String photo = cursor.getString(2);
+            Log.d(TAG, "Found: display name: " + name + " Email: " + email + " Photo: " + photo);
+            uri = photo == null ? null : Uri.parse(photo);
+            User user = new User(email, name, uri, new UserProfile(UserState.UNKNOW));
+            contacts.add(user);
         }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                listView.getAdapter().notifyDataSetChanged();
+            }
+        });
+        cursor.close();
+    }
+
+    private void addContact(final String id, final User user) {
         ArrayList<ContentProviderOperation> ops = new ArrayList<>();
         ContentProviderOperation op = ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
                 .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, GIFTAR_COM)
+                .withValue(ContactsContract.RawContacts.CONTACT_ID, id)
                 .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, user.getId()).build();
         ops.add(op);
         op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                 .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                 .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
                 .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, user.getName())
-                .build();
-        ops.add(op);
-        op = ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
-                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE)
-                .withValue(ContactsContract.CommonDataKinds.Photo.PHOTO, photo)
                 .build();
         ops.add(op);
         try {
