@@ -235,7 +235,11 @@ public class MainActivity extends RoboActionBarActivity implements GoogleApiClie
         @Override
         public void onBindViewHolder(ViewHolder contactViewHolder, int i) {
             contactViewHolder.name.setText(contacts.get(i).getName());
-            contactViewHolder.photo.setImageURI(contacts.get(i).getUri());
+            if (contacts.get(i).getUri() == null) {
+                contactViewHolder.photo.setImageResource(R.drawable.ic_account_circle);
+            } else {
+                contactViewHolder.photo.setImageURI(contacts.get(i).getUri());
+            }
         }
 
         @Override

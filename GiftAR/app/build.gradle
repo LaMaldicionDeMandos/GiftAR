@@ -77,4 +77,6 @@ dependencies {
     compile 'com.google.code.gson:gson:2.2.+'
     compile 'org.roboguice:roboguice:3.+'
     compile 'com.google.guava:guava:18.+'
+
+    compile 'com.pkmmte.view:circularimageview:1.1'
 }
